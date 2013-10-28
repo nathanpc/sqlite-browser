@@ -2,17 +2,18 @@
 #define SQLHELPER_H
 
 #include <QObject>
+#include <vector>
+#include <sqlite3.h>
 
-class SQLHelper : public QObject
-{
-		Q_OBJECT
+class SQLHelper {
 	public:
-		explicit SQLHelper(QObject *parent = 0);
-		
-	signals:
-		
-	public slots:
-		
+		sqlite3 *db;
+
+		SQLHelper();
+		virtual ~SQLHelper();
+
+		bool open_database(QString path);
+		std::vector<std::vector<QString> > query(QString query);
 };
 
 #endif // SQLHELPER_H

@@ -1,10 +1,14 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include "sqlhelper.h"
 
 int main(int argc, char *argv[]) {
-	QApplication a(argc, argv);
-	MainWindow w;
-	w.show();
+	QApplication app(argc, argv);
+	MainWindow window;
+	//SQLHelper *sql;
 
-	return a.exec();
+	//window.sql = sql;
+	window.show();
+
+	return app.exec();
 }

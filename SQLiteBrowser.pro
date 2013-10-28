@@ -11,12 +11,14 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = SQLiteBrowser
 TEMPLATE = app
 
-
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    sqlhelper.cpp
+		mainwindow.cpp \
+	sqlhelper.cpp
 
 HEADERS  += mainwindow.h \
-    sqlhelper.h
+	sqlhelper.h
 
 FORMS    += mainwindow.ui
+
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += sqlite3
