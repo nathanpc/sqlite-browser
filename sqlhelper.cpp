@@ -10,6 +10,8 @@
 #include <vector>
 #include <sqlite3.h>
 
+#include <QMessageBox>
+
 #include "sqlhelper.h"
 
 using namespace std;
@@ -41,9 +43,10 @@ int SQLHelper::open_database(QString path) {
  * Query something from the database.
  *
  * @param query A SQL query string.
+ * @param col_names Pointer to a vector to store the collumn names.
  * @return A vector of string vectors with the results.
  */
-vector<vector<QString> > SQLHelper::query(QString query) {
+vector<vector<QString> > SQLHelper::query(QString query, vector<QString> *col_names) {
 	sqlite3_stmt *statement;
 	vector<vector<QString> > results;
 
@@ -51,6 +54,7 @@ vector<vector<QString> > SQLHelper::query(QString query) {
 	if (sqlite3_prepare_v2(db, query.toStdString().c_str(), -1, &statement, 0) == SQLITE_OK) {
 		// Get the amount of columns.
 		int cols = sqlite3_column_count(statement);
+		bool got_col_names = false;
 
 		while (true) {
 			// Check if there's a row.
@@ -62,6 +66,11 @@ vector<vector<QString> > SQLHelper::query(QString query) {
 					QString value;
 					char *cval = (char *)sqlite3_column_text(statement, col);
 
+					// Get collumn names.
+					if ((!got_col_names) && (col_names != NULL)) {
+						col_names->push_back(QString(sqlite3_column_name(statement, col)));
+					}
+
 					// Prevents storing NULL into a std::string, which causes a crash.
 					if (cval) {
 						value = QString(cval);
@@ -70,6 +79,7 @@ vector<vector<QString> > SQLHelper::query(QString query) {
 					values.push_back(value);
 				}
 
+				got_col_names = true;
 				results.push_back(values);
 			} else {
 				break;
@@ -80,10 +90,17 @@ vector<vector<QString> > SQLHelper::query(QString query) {
 		sqlite3_finalize(statement);
 	}
 
+	// Error handling.
 	string error = sqlite3_errmsg(db);
 	if (error != "not an error") {
+		QMessageBox *alert = new QMessageBox(0);
+
+		// TODO: Apply the "Error" dialog style.
+		alert->setText("Error");
+		alert->setInformativeText(QString(error.c_str()));
+		alert->exec();
+
 		cout << "Error at \"" << query.toStdString() << "\": " << error << endl;
-		exit(EXIT_FAILURE);
 	}
 
 	return results;
