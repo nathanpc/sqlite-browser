@@ -20,14 +20,14 @@ MainWindow::~MainWindow() {
 void MainWindow::on_actionOpen_Database_triggered() {
 	QString path = QFileDialog::getOpenFileName(this, tr("Open Database"), "",
 												tr("SQLite Databases (*.db *.sqlite);;Files (*.*)"));
-	bool success = sql.open_database(path);
 
-	if (!success) {
+	int fail = sql.open_database(path);
+	if (fail) {
 		QMessageBox *alert = new QMessageBox(this);
 
 		// TODO: Apply the "Error" dialog style.
 		alert->setText("Error");
-		alert->setInformativeText("Couldn't open the database");
+		alert->setInformativeText(sql.sqlite_error_msg(fail));
 		alert->exec();
 	}
 }

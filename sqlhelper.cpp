@@ -30,15 +30,11 @@ SQLHelper::~SQLHelper() {
  * Open the database.
  *
  * @param path A SQLite database path.
+ * @return SQLite return code.
  */
-bool SQLHelper::open_database(QString path) {
+int SQLHelper::open_database(QString path) {
 	const char *cpath = path.toStdString().c_str();
-
-	if (sqlite3_open(cpath, &db) != SQLITE_OK) {
-		return false;
-	}
-
-	return true;
+	return sqlite3_open(cpath, &db);
 }
 
 /**
@@ -91,4 +87,67 @@ vector<vector<QString> > SQLHelper::query(QString query) {
 	}
 
 	return results;
+}
+
+/**
+ *	SQLite error message.
+ *
+ * @param sqlite_error Error code.
+ * @return Error message.
+ */
+QString SQLHelper::sqlite_error_msg(int sqlite_error) {
+	switch (sqlite_error) {
+		case SQLITE_ERROR:
+			return "SQLITE_ERROR: SQL error or missing database";
+		case SQLITE_INTERNAL:
+			return "SQLITE_INTERNAL: Internal logic error in SQLite";
+		case SQLITE_PERM:
+			return "SQLITE_PERM: Access permission denied";
+		case SQLITE_ABORT:
+			return "SQLITE_ABORT: Callback routine requested an abort";
+		case SQLITE_BUSY:
+			return "SQLITE_BUSY: The database file is locked";
+		case SQLITE_LOCKED:
+			return "SQLITE_LOCKED: A table in the database is locked";
+		case SQLITE_NOMEM:
+			return "SQLITE_NOMEM: A malloc() failed";
+		case SQLITE_READONLY:
+			return "SQLITE_READONLY: Attempt to write a readonly database";
+		case SQLITE_INTERRUPT:
+			return "SQLITE_INTERRUPT: Operation terminated by sqlite3_interrupt()";
+		case SQLITE_IOERR:
+			return "SQLITE_IOERR: Some kind of disk I/O error occurred";
+		case SQLITE_CORRUPT:
+			return "SQLITE_CORRUPT: The database disk image is malformed";
+		case SQLITE_NOTFOUND:
+			return "SQLITE_NOTFOUND: Unknown opcode in sqlite3_file_control()";
+		case SQLITE_FULL:
+			return "SQLITE_FULL: Insertion failed because database is full";
+		case SQLITE_CANTOPEN:
+			return "SQLITE_CANTOPEN: Unable to open the database file";
+		case SQLITE_PROTOCOL:
+			return "SQLITE_PROTOCOL: Database lock protocol error";
+		case SQLITE_EMPTY:
+			return "SQLITE_EMPTY: Database is empty";
+		case SQLITE_SCHEMA:
+			return "SQLITE_SCHEMA: The database schema changed";
+		case SQLITE_TOOBIG:
+			return "SQLITE_TOOBIG: String or BLOB exceeds size limit";
+		case SQLITE_CONSTRAINT:
+			return "SQLITE_CONSTRAINT: Abort due to constraint violation";
+		case SQLITE_MISMATCH:
+			return "SQLITE_MISMATCH: Data type mismatch";
+		case SQLITE_MISUSE:
+			return "SQLITE_MISUSE: Library used incorrectly";
+		case SQLITE_NOLFS:
+			return "SQLITE_NOLFS: Uses OS features not supported on host";
+		case SQLITE_AUTH:
+			return "SQLITE_AUTH: Authorization denied";
+		case SQLITE_FORMAT:
+			return "SQLITE_FORMAT: Auxiliary database format error";
+		case SQLITE_RANGE:
+			return "SQLITE_RANGE: Auxiliary database format error";
+		case SQLITE_NOTADB:
+			return "SQLITE_NOTADB: File opened that is not a database file";
+	}
 }

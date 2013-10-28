@@ -12,8 +12,9 @@ class SQLHelper {
 		SQLHelper();
 		virtual ~SQLHelper();
 
-		bool open_database(QString path);
+		int open_database(QString path);
 		std::vector<std::vector<QString> > query(QString query);
+		QString sqlite_error_msg(int sqlite_error);
 };
 
 #endif // SQLHELPER_H
