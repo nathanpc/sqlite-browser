@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "queryfield.h"
 
 #include <iostream>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <QStringListModel>
 #include <QStandardItem>
 #include <QStandardItemModel>
+#include <QTableView>
 
 using namespace std;
 
@@ -17,51 +19,23 @@ MainWindow::MainWindow(QWidget *parent) :
 					   QMainWindow(parent),
 					   ui(new Ui::MainWindow) {
 	ui->setupUi(this);
-	table_model = NULL;
+
+	// Setup the Query field.
+	queryField = new QueryField(&sql);
+	ui->splitter->addWidget(queryField);
+
+	// Setup the table.
+	tableView = new QTableView();
+	horizontalHeader = tableView->horizontalHeader();
+	horizontalHeader->setSortIndicatorShown(true);
+	horizontalHeader->setCascadingSectionResizes(true);
+	ui->splitter->addWidget(tableView);
+
+	sql.setTableView(tableView);
 }
 
 MainWindow::~MainWindow() {
 	delete ui;
-}
-
-/**
- * Populates the TableView.
- *
- * @param cols Collumn names.
- * @param rows Rows.
- */
-void MainWindow::populate_table(const vector<QString> cols, const vector<vector<QString> > rows) {
-	// Create the model.
-	table_model = new QStandardItemModel(rows.size(), cols.size(), this);
-	bool populated_cols = false;
-
-	// Populate the model.
-	for (size_t row = 0; row < rows.size(); ++row) {
-		for (size_t col = 0; col < cols.size(); ++col) {
-			if (!populated_cols) {
-				table_model->setHorizontalHeaderItem(col, new QStandardItem(cols[col]));
-			}
-
-			table_model->setItem(row, col, new QStandardItem(rows[row][col]));
-		}
-
-		populated_cols = true;
-	}
-
-	// Set the model.
-	ui->tableView->setModel(table_model);
-}
-
-/**
- * Execute a SQL query and show its result in the TableView.
- *
- * @param qry A SQL query.
- */
-void MainWindow::sql_query(QString qry) {
-	vector<QString> cols;
-	vector<vector<QString> > table = sql.query(qry, &cols);
-
-	populate_table(cols, table);
 }
 
 /**
@@ -96,7 +70,7 @@ void MainWindow::on_actionOpen_Database_triggered() {
  */
 void MainWindow::on_treeView_clicked(const QModelIndex &index) {
 	// Dump the whole table into the TableView.
-	sql_query("SELECT * FROM " + tables_list[index.row()]);
+	sql.view_query("SELECT * FROM " + tables_list[index.row()]);
 }
 
 /**

@@ -3,7 +3,11 @@
 
 #include <QMainWindow>
 #include <QStandardItemModel>
+#include <QTableView>
+#include <QHeaderView>
+
 #include "sqlhelper.h"
+#include "queryfield.h"
 
 namespace Ui {
 	class MainWindow;
@@ -16,9 +20,6 @@ class MainWindow : public QMainWindow {
 		explicit MainWindow(QWidget *parent = 0);
 		~MainWindow();
 
-		void populate_table(const std::vector<QString> cols, const std::vector<std::vector<QString> > rows);
-		void sql_query(QString qry);
-
 	private slots:
 		void on_actionOpen_Database_triggered();
 		void on_treeView_clicked(const QModelIndex &index);
@@ -27,10 +28,13 @@ class MainWindow : public QMainWindow {
 
 	private:
 		Ui::MainWindow *ui;
-		SQLHelper sql;
+		QueryField *queryField;
+		QTableView *tableView;
+		QHeaderView *horizontalHeader;
 
+		SQLHelper sql;
 		QStringList tables_list;
-		QStandardItemModel *table_model;
+
 };
 
 #endif // MAINWINDOW_H

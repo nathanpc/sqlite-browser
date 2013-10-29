@@ -2,11 +2,21 @@
 #define QUERYFIELD_H
 
 #include <QObject>
+#include <QPlainTextEdit>
 
-class QueryField : public QObject
-{
+#include "sqlhelper.h"
+
+class QueryField : public QPlainTextEdit {
+	Q_OBJECT
+
+	private:
+		SQLHelper *sql;
+
 	public:
-		QueryField();
+		explicit QueryField(SQLHelper *sql);
+
+	protected:
+		virtual void keyPressEvent(QKeyEvent *event);
 };
 
 #endif // QUERYFIELD_H

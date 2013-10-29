@@ -11,6 +11,8 @@
 #include <sqlite3.h>
 
 #include <QMessageBox>
+#include <QStandardItem>
+#include <QStandardItemModel>
 
 #include "sqlhelper.h"
 
@@ -19,6 +21,7 @@ using namespace std;
 SQLHelper::SQLHelper() {
 	sqlite3_initialize();
 	db = NULL;
+	table_model = NULL;
 }
 
 SQLHelper::~SQLHelper() {
@@ -26,6 +29,10 @@ SQLHelper::~SQLHelper() {
 		sqlite3_close(db);
 		sqlite3_shutdown();
 	}
+}
+
+void SQLHelper::setTableView(QTableView *tableView) {
+	this->tableView = tableView;
 }
 
 /**
@@ -104,6 +111,46 @@ vector<vector<QString> > SQLHelper::query(QString query, vector<QString> *col_na
 	}
 
 	return results;
+}
+
+/**
+ * Populates the TableView.
+ *
+ * @param cols Collumn names.
+ * @param rows Rows.
+ */
+void SQLHelper::populate_table(const vector<QString> cols, const vector<vector<QString> > rows) {
+	// Create the model.
+	table_model = new QStandardItemModel(rows.size(), cols.size(), 0);
+	bool populated_cols = false;
+
+	// Populate the model.
+	for (size_t row = 0; row < rows.size(); ++row) {
+		for (size_t col = 0; col < cols.size(); ++col) {
+			if (!populated_cols) {
+				table_model->setHorizontalHeaderItem(col, new QStandardItem(cols[col]));
+			}
+
+			table_model->setItem(row, col, new QStandardItem(rows[row][col]));
+		}
+
+		populated_cols = true;
+	}
+
+	// Set the model.
+	tableView->setModel(table_model);
+}
+
+/**
+ * Execute a SQL query and show its result in the TableView.
+ *
+ * @param qry A SQL query.
+ */
+void SQLHelper::view_query(QString qry) {
+	vector<QString> cols;
+	vector<vector<QString> > table = query(qry, &cols);
+
+	populate_table(cols, table);
 }
 
 /**
