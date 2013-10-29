@@ -8,6 +8,8 @@
 #include <QMessageBox>
 #include <QStringList>
 #include <QStringListModel>
+#include <QStandardItem>
+#include <QStandardItemModel>
 
 using namespace std;
 
@@ -15,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
 					   QMainWindow(parent),
 					   ui(new Ui::MainWindow) {
 	ui->setupUi(this);
+	table_model = NULL;
 }
 
 MainWindow::~MainWindow() {
@@ -27,12 +30,38 @@ MainWindow::~MainWindow() {
  * @param cols Collumn names.
  * @param rows Rows.
  */
-void MainWindow::populate_table(vector<QString> cols, vector<vector<QString> > rows) {
-	for (size_t row = 0; row < table.size(); ++row) {
-		for (size_t col = 0; col < cols->size(); ++col) {
-			//rows[row][col]
+void MainWindow::populate_table(const vector<QString> cols, const vector<vector<QString> > rows) {
+	// Create the model.
+	table_model = new QStandardItemModel(rows.size(), cols.size(), this);
+	bool populated_cols = false;
+
+	// Populate the model.
+	for (size_t row = 0; row < rows.size(); ++row) {
+		for (size_t col = 0; col < cols.size(); ++col) {
+			if (!populated_cols) {
+				table_model->setHorizontalHeaderItem(col, new QStandardItem(cols[col]));
+			}
+
+			table_model->setItem(row, col, new QStandardItem(rows[row][col]));
 		}
+
+		populated_cols = true;
 	}
+
+	// Set the model.
+	ui->tableView->setModel(table_model);
+}
+
+/**
+ * Execute a SQL query and show its result in the TableView.
+ *
+ * @param qry A SQL query.
+ */
+void MainWindow::sql_query(QString qry) {
+	vector<QString> cols;
+	vector<vector<QString> > table = sql.query(qry, &cols);
+
+	populate_table(cols, table);
 }
 
 /**
@@ -45,12 +74,7 @@ void MainWindow::on_actionOpen_Database_triggered() {
 	// Open the database.
 	int fail = sql.open_database(path);
 	if (fail) {
-		QMessageBox *alert = new QMessageBox(this);
-
-		// TODO: Apply the "Error" dialog style.
-		alert->setText("Error");
-		alert->setInformativeText(sql.sqlite_error_msg(fail));
-		alert->exec();
+		QMessageBox::critical(this, "Error", sql.sqlite_error_msg(fail));
 	} else {
 		// Populate TreeView with the tables.
 		vector<vector<QString> > tables = sql.query("SELECT name FROM sqlite_master WHERE type = 'table'", NULL);
@@ -72,8 +96,12 @@ void MainWindow::on_actionOpen_Database_triggered() {
  */
 void MainWindow::on_treeView_clicked(const QModelIndex &index) {
 	// Dump the whole table into the TableView.
-	vector<QString> *cols;
-	vector<vector<QString> > table = sql.query("SELECT * FROM " + tables_list[index.row()], cols);
+	sql_query("SELECT * FROM " + tables_list[index.row()]);
+}
 
-	populate_table(cols, table);
+/**
+ * Window close event handler.
+ */
+void MainWindow::on_MainWindow_destroyed() {
+	// TODO: Save the splitter sizes.
 }

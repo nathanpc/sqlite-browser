@@ -13,10 +13,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
 		mainwindow.cpp \
-	sqlhelper.cpp
+	sqlhelper.cpp \
+    queryfield.cpp
 
 HEADERS  += mainwindow.h \
-	sqlhelper.h
+	sqlhelper.h \
+    queryfield.h
 
 FORMS    += mainwindow.ui
 
